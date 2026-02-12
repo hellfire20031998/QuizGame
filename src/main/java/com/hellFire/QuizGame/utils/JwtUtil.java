@@ -2,26 +2,45 @@ package com.hellFire.QuizGame.utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String SECRET = "SECRET_KEY_CHANGE_ME";
+
+    @Value("${app.jwt.secret}")
+    private String secret;
+
+    @Value("${app.jwt.expiration}")
+    private long expiration;
+
+    private Key key;
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String generateToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
-                .signWith(SignatureAlgorithm.HS256, SECRET)
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String extractEmail(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET)
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();

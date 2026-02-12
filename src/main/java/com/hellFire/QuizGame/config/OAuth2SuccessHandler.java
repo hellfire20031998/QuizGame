@@ -46,8 +46,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         if(Objects.isNull(user)){
             SignUpRequest signUpRequest = new SignUpRequest();
+            signUpRequest.setUsername(email);
             signUpRequest.setEmail(email);
-            signUpRequest.setProvider("GOOGLE");;
+            signUpRequest.setProvider("GOOGLE");
             user = userService.createUser(signUpRequest);
         }
 
