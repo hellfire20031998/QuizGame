@@ -29,7 +29,7 @@ public class DomainController {
         );
     }
 
-    @GetMapping
+    @GetMapping("/get-all")
     public ResponseEntity<ApiResponse<List<Domain>>> getAll() {
 
         return ResponseEntity.ok(
