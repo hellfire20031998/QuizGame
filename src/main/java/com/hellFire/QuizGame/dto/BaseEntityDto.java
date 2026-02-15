@@ -1,7 +1,10 @@
 package com.hellFire.QuizGame.dto;
 
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
+@Data
 public class BaseEntityDto {
 
     private Long id;

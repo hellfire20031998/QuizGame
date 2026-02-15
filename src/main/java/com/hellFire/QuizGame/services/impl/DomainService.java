@@ -67,6 +67,14 @@ public class DomainService {
         domainRepository.delete(domain);
     }
 
+    public List<Domain> getLatestDomains() {
+        return domainRepository.findTop10ByOrderByCreatedAtDesc();
+    }
+
+    public List<Domain> getRelatedDomains(Long domainId) {
+        return domainRepository.findTop5ByIdNotOrderByCreatedAtDesc(domainId);
+    }
+
     public List<DomainDto> toDtoList(List<Domain> domains){
         return domainMapper.toDtoList(domains);
     }
