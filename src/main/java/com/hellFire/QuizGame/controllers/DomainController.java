@@ -8,6 +8,7 @@ import com.hellFire.QuizGame.services.impl.DomainService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.event.ListDataEvent;
 import java.util.List;
 
 @RestController
@@ -39,8 +40,7 @@ public class DomainController {
 
     @GetMapping("/latest")
     public ApiResponse<List<DomainDto>> getLatestDomains() {
-        return ApiResponse.success(
-                domainService.toDtoList(domainService.getLatestDomains()),
+        return ApiResponse.success(domainService.toDtoList(domainService.getLatestDomains()),
                 "Latest domains fetched successfully"
         );
     }
