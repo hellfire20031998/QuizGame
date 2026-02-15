@@ -9,5 +9,5 @@ public class CreateQuizRequest {
     private String title;
     private String description;
     private List<CreateQuestionRequest> questionRequests;
-
+    private List<Long> domains;
 }

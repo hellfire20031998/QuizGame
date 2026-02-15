@@ -3,6 +3,7 @@ package com.hellFire.QuizGame.services.impl;
 import com.hellFire.QuizGame.dto.UserDto;
 import com.hellFire.QuizGame.dto.request.CreateQuizRequest;
 import com.hellFire.QuizGame.dto.request.SignUpRequest;
+import com.hellFire.QuizGame.dto.response.AuthResponse;
 import com.hellFire.QuizGame.entity.User;
 import com.hellFire.QuizGame.mapper.IUserMapper;
 import com.hellFire.QuizGame.repositories.IUserRepository;
@@ -36,6 +37,26 @@ public class UserService implements IUserService {
 
         return userRepository.save(user);
     }
+
+
+    public AuthResponse toAuthResponse(User user, String token) {
+        AuthResponse response = new AuthResponse();
+        response.setEmail(user.getEmail());
+        response.setUsername(user.getUsername());
+        response.setRole(user.getRole());
+        response.setToken(token);
+        return response;
+    }
+
+    public AuthResponse toAuthResponse(User user) {
+        AuthResponse response = new AuthResponse();
+        response.setEmail(user.getEmail());
+        response.setUsername(user.getUsername());
+        response.setRole(user.getRole());
+        return response;
+    }
+
+
 
     public User getUserByEmail(String email){
         return userRepository.findByEmailIgnoreCaseAndDeleted(email, false);

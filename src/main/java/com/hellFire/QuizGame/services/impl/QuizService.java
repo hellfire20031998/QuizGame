@@ -32,8 +32,8 @@ public class QuizService implements IQuizService {
     }
 
     @Transactional
-    public QuizDto createQuiz(CreateQuizRequest request, String email){
-        User user = userService.getUserByEmail(email);
+    public QuizDto createQuiz(CreateQuizRequest request, User user){
+
         Quiz quiz = quizMapper.createEntity(request);
         quiz.setCreatedBy(user);
         List<Question> questionList = questionService.createEntity(request.getQuestionRequests());

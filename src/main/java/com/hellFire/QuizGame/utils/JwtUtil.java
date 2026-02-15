@@ -1,5 +1,6 @@
 package com.hellFire.QuizGame.utils;
 
+import com.hellFire.QuizGame.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -28,9 +29,9 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String email) {
+    public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)

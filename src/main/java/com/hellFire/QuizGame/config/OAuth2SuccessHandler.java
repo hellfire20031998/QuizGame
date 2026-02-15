@@ -2,6 +2,7 @@ package com.hellFire.QuizGame.config;
 
 import com.hellFire.QuizGame.dto.request.SignUpRequest;
 import com.hellFire.QuizGame.entity.User;
+import com.hellFire.QuizGame.entity.enums.Role;
 import com.hellFire.QuizGame.repositories.IUserRepository;
 import com.hellFire.QuizGame.services.IUserService;
 import com.hellFire.QuizGame.services.impl.UserService;
@@ -40,21 +41,44 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
+        if (oAuth2User == null) {
+            throw new RuntimeException("OAuth2 authentication failed");
+        }
+
         String email = oAuth2User.getAttribute("email");
+
+        if (email == null) {
+            throw new RuntimeException("Email not found from OAuth provider");
+        }
+        String selectedRole = request.getParameter("role");
+
+        if (selectedRole == null) {
+            selectedRole = "PLAYER";
+        }
+
+        Role role;
+        try {
+            role = Role.valueOf(selectedRole.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            role = Role.PLAYER;
+        }
 
         User user = userRepository.findByEmail(email);
 
-        if(Objects.isNull(user)){
+        if (Objects.isNull(user)) {
             SignUpRequest signUpRequest = new SignUpRequest();
             signUpRequest.setUsername(email);
             signUpRequest.setEmail(email);
             signUpRequest.setProvider("GOOGLE");
+            signUpRequest.setRole(role);
+
             user = userService.createUser(signUpRequest);
         }
 
-        String token = jwtUtil.generateToken(email);
+        String token = jwtUtil.generateToken(user);
 
         response.sendRedirect("http://localhost:3000/oauth-success?token=" + token);
     }
+
 }
 
