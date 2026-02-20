@@ -5,14 +5,11 @@ import com.hellFire.QuizGame.dto.request.CreateQuizRequest;
 import com.hellFire.QuizGame.dto.response.ApiResponse;
 import com.hellFire.QuizGame.entity.User;
 import com.hellFire.QuizGame.services.IQuizService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("quiz")
@@ -36,5 +33,15 @@ public class QuizController {
                 ApiResponse.success(quizService.createQuiz(request, user), "Quiz created successfully")
         );
     }
+
+    @GetMapping("/get-all")
+    public ResponseEntity<ApiResponse<Page<QuizDto>>> getAllQuiz(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        return ResponseEntity.ok(ApiResponse.success(quizService.getAllQuiz(page, size)));
+    }
+
 
 }

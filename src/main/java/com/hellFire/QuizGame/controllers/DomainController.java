@@ -52,4 +52,15 @@ public class DomainController {
                 "Related domains fetched successfully"
         );
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<DomainDto>>> searchDomains(
+            @RequestParam String query) {
+
+        List<DomainDto> domains = domainService.getRelatedDomains(query);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(domains, "Related domains fetched successfully")
+        );
+    }
 }

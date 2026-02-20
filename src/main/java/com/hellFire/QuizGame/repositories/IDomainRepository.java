@@ -17,4 +17,6 @@ public interface IDomainRepository extends JpaRepository<Domain, Long> {
     List<Domain> findTop10ByOrderByCreatedAtDesc();
 
     List<Domain> findTop5ByIdNotOrderByCreatedAtDesc(Long id);
+
+    List<Domain> findByNameContainingIgnoreCaseOrderByNameAsc(String name);
 }

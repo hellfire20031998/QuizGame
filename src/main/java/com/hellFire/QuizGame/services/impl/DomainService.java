@@ -71,8 +71,24 @@ public class DomainService {
         return domainRepository.findTop10ByOrderByCreatedAtDesc();
     }
 
+    public List<DomainDto> getRelatedDomains(String name) {
+
+        if (name == null || name.trim().length() < 3) {
+            throw new IllegalArgumentException("Search query must contain at least 3 characters");
+        }
+
+        List<Domain> domains =
+                domainRepository.findByNameContainingIgnoreCaseOrderByNameAsc(name.trim());
+
+        return domainMapper.toDtoList(domains);
+    }
+
     public List<Domain> getRelatedDomains(Long domainId) {
         return domainRepository.findTop5ByIdNotOrderByCreatedAtDesc(domainId);
+    }
+
+    public List<Domain> getDomainsByIds(List<Long> ids){
+        return domainRepository.findAllById(ids);
     }
 
     public List<DomainDto> toDtoList(List<Domain> domains){
