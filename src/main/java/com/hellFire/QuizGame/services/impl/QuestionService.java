@@ -3,8 +3,10 @@ package com.hellFire.QuizGame.services.impl;
 import com.hellFire.QuizGame.dto.OptionDto;
 import com.hellFire.QuizGame.dto.QuestionDto;
 import com.hellFire.QuizGame.dto.request.CreateQuestionRequest;
+import com.hellFire.QuizGame.dto.request.UpdateQuestionRequest;
 import com.hellFire.QuizGame.entity.Option;
 import com.hellFire.QuizGame.entity.Question;
+import com.hellFire.QuizGame.entity.Quiz;
 import com.hellFire.QuizGame.mapper.IOptionMapper;
 import com.hellFire.QuizGame.mapper.IQuestionMapper;
 import com.hellFire.QuizGame.repositories.IQuestionRepository;
@@ -14,6 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionService implements IQuestionService {
@@ -38,6 +43,36 @@ public class QuestionService implements IQuestionService {
             questionList.add(question);
         }
         return questionList;
+    }
+
+    public List<Question> updateEntity(List<UpdateQuestionRequest>requests){
+
+        List<Long> incomingIds = requests.stream()
+                .map(UpdateQuestionRequest::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<Question> existingQuestions = questionRepository.findAllById(incomingIds);
+
+        Map<Long, UpdateQuestionRequest> requestMap = requests.stream()
+                .filter(req -> req.getId() != null)
+                .collect(Collectors.toMap(UpdateQuestionRequest::getId, req -> req));
+
+        for (Question question : existingQuestions) {
+
+            UpdateQuestionRequest matchingReq = requestMap.get(question.getId());
+
+            if (matchingReq != null) {
+                questionMapper.updateQuestionFromRequest(matchingReq, question);
+            }
+        }
+
+        return questionRepository.saveAll(existingQuestions);
+    }
+
+    @Override
+    public void deleteByQuiz(Quiz quiz) {
+        questionRepository.deleteByQuiz(quiz);
     }
 
     public List<QuestionDto> toDtoList(List<Question> questionList){

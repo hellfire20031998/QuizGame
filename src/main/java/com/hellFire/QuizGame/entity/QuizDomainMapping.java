@@ -1,6 +1,7 @@
 package com.hellFire.QuizGame.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -8,6 +9,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @Table(name = "quiz_domain_mapping")
+@Builder
 public class QuizDomainMapping extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -24,14 +24,13 @@ public class QuizDomainMappingService {
         }
 
         List<QuizDomainMapping> mappings = domainList.stream()
-                .map(domain -> {
-                    QuizDomainMapping mapping = new QuizDomainMapping();
-                    mapping.setQuiz(quiz);
-                    mapping.setDomain(domain);
-                    return mapping;
-                })
+                .map(domain -> QuizDomainMapping.builder()
+                        .quiz(quiz)
+                        .domain(domain)
+                        .build())
                 .toList();
 
         quizDomainMappingRepository.saveAll(mappings);
     }
+
 }

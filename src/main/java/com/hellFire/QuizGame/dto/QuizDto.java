@@ -1,10 +1,7 @@
 package com.hellFire.QuizGame.dto;
 
-import com.hellFire.QuizGame.entity.Question;
 import com.hellFire.QuizGame.entity.User;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -17,7 +14,7 @@ public class QuizDto extends BaseEntityDto{
     private String description;
     private boolean published = false;
 
-    private User createdBy;
+    private UserDto createdBy;
 
     private List<QuestionDto> questions;
 }

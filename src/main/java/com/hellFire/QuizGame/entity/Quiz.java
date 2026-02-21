@@ -2,6 +2,7 @@ package com.hellFire.QuizGame.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.repository.cdi.Eager;
 
 import java.util.List;
 
