@@ -1,5 +1,6 @@
 package com.hellFire.QuizGame.config;
 
+import com.hellFire.QuizGame.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -49,6 +50,15 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            ApiResponse<?> body = ApiResponse.error("TOKEN_MISSING",
+                                    "Authentication token is missing or invalid.");
+                            String json = String.format(
+                                    "{\"success\":false,\"errorCode\":\"%s\",\"message\":\"%s\"}",
+                                    body.getErrorCode(),
+                                    body.getMessage().replace("\"", "\\\"")
+                            );
+                            response.getWriter().write(json);
                         })
                 );
 

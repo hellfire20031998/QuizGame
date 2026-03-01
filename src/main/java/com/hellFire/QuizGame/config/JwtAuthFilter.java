@@ -2,7 +2,6 @@ package com.hellFire.QuizGame.config;
 
 import com.hellFire.QuizGame.dto.response.ApiResponse;
 import com.hellFire.QuizGame.entity.User;
-import com.hellFire.QuizGame.exceptions.AuthException;
 import com.hellFire.QuizGame.exceptions.ErrorCode;
 import com.hellFire.QuizGame.repositories.IUserRepository;
 import com.hellFire.QuizGame.utils.JwtUtil;
@@ -60,13 +59,35 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-            } catch (io.jsonwebtoken.ExpiredJwtException ex) {
-                throw new AuthException("Token has expired. Please log in again.", ErrorCode.TOKEN_EXPIRED);
-            } catch (io.jsonwebtoken.SignatureException ex) {
-                throw new AuthException("Invalid token signature.", ErrorCode.TOKEN_INVALID);
-            } catch (Exception ex) {
-                throw new AuthException("Authentication failed: " + ex.getMessage(), ErrorCode.TOKEN_MISSING);
-            }
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    ErrorCode.TOKEN_EXPIRED, "Token has expired. Please log in again.");
+        } catch (io.jsonwebtoken.SignatureException ex) {
+            writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    ErrorCode.TOKEN_INVALID, "Invalid token signature.");
+        } catch (Exception ex) {
+            writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    ErrorCode.TOKEN_MISSING, "Authentication failed: " + ex.getMessage());
+        }
     }
 
+    private void writeErrorResponse(HttpServletResponse response,
+                                    int status,
+                                    ErrorCode errorCode,
+                                    String message) throws IOException {
+        if (response.isCommitted()) {
+            return;
+        }
+
+        response.setStatus(status);
+        response.setContentType("application/json");
+
+        ApiResponse<?> body = ApiResponse.error(errorCode.name(), message);
+        String json = String.format(
+                "{\"success\":false,\"errorCode\":\"%s\",\"message\":\"%s\"}",
+                body.getErrorCode(),
+                body.getMessage().replace("\"", "\\\"")
+        );
+        response.getWriter().write(json);
+    }
 }
