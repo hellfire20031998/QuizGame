@@ -13,6 +13,10 @@ import java.util.Optional;
 @Repository
 public interface IQuizRepository extends JpaRepository<Quiz, Long> {
     Page<Quiz> findByCreatedByAndDeletedFalse(User createdBy, Pageable pageable);
+    Page<Quiz> findByCreatedByNotAndDeletedFalse(User createdBy, Pageable pageable);
+
     Optional<Quiz> findByIdAndCreatedByAndDeletedFalse(Long id, User createdBy);
+    Optional<Quiz> findByIdAndDeletedFalse(Long id);
+
     Optional<Quiz> findByIdAndCreatedBy(Long id, User user);
 }

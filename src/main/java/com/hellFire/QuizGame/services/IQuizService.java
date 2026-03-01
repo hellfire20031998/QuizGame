@@ -11,12 +11,12 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface IQuizService {
-    PaginatedResponse<QuizDto> getAllQuiz(int page, int size);
+    PaginatedResponse<QuizDto> getAllQuiz(int page, int size, User user);
     PaginatedResponse<QuizDto> getAllMyQuiz(int page, int size, User user);
     QuizDto getMyQuizById(Long id, User user);
+    QuizDto getQuizById(Long id);
     QuizDto toDto(Quiz quiz);
-    void publishQuiz(Long id);
-    void unpublishQuiz(Long id);
+    boolean togglePublishStatus(Long id, User user);
     void deleteQuiz(Long id, User user);
     List<QuizDto> toDtoList(List<Quiz> quizList);
     QuizDto createQuiz(CreateQuizRequest request, User user);

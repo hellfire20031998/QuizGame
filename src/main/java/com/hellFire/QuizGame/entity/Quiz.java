@@ -21,6 +21,8 @@ public class Quiz extends BaseEntity {
     @ManyToOne
     private User createdBy;
 
+    private Long totalTimeInSeconds;
+
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
     private List<Question> questions;
 }

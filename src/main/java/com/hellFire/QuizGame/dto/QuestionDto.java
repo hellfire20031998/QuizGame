@@ -1,6 +1,5 @@
 package com.hellFire.QuizGame.dto;
 
-import com.hellFire.QuizGame.entity.Quiz;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

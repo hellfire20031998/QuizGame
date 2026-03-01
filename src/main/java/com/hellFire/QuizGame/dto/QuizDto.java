@@ -1,7 +1,5 @@
 package com.hellFire.QuizGame.dto;
 
-import com.hellFire.QuizGame.entity.User;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,6 +13,7 @@ public class QuizDto extends BaseEntityDto{
     private boolean published = false;
 
     private UserDto createdBy;
+    private Long totalTimeInSeconds;
 
     private List<QuestionDto> questions;
 }

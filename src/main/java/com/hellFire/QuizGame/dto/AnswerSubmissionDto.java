@@ -5,7 +5,8 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class OptionDto extends BaseEntityDto{
-    private String text;
-//    private boolean correct;
+public class AnswerSubmissionDto extends  BaseEntityDto {
+
+    private QuestionDto question;
+    private OptionDto selectedOption;
 }

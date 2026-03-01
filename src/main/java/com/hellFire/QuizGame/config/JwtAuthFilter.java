@@ -1,6 +1,9 @@
 package com.hellFire.QuizGame.config;
 
+import com.hellFire.QuizGame.dto.response.ApiResponse;
 import com.hellFire.QuizGame.entity.User;
+import com.hellFire.QuizGame.exceptions.AuthException;
+import com.hellFire.QuizGame.exceptions.ErrorCode;
 import com.hellFire.QuizGame.repositories.IUserRepository;
 import com.hellFire.QuizGame.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -16,7 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -34,26 +36,37 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String auth = request.getHeader("Authorization");
 
-        if (auth != null && auth.startsWith("Bearer ")) {
-            String token = auth.substring(7);
-            String email = jwtUtil.extractEmail(token);
+        try {
+            if (auth != null && auth.startsWith("Bearer ")) {
 
-            if (email != null) {
-                User user = userRepository.findByEmail(email);
+                String token = auth.substring(7);
 
-                if (user != null) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    user, null, List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
-                            )
-                            );
+                String email = jwtUtil.extractEmail(token);
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (email != null) {
+                    User user = userRepository.findByEmail(email);
+
+                    if (user != null) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        user,
+                                        null,
+                                        List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                                );
+
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
             }
-        }
 
-        filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
+            } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+                throw new AuthException("Token has expired. Please log in again.", ErrorCode.TOKEN_EXPIRED);
+            } catch (io.jsonwebtoken.SignatureException ex) {
+                throw new AuthException("Invalid token signature.", ErrorCode.TOKEN_INVALID);
+            } catch (Exception ex) {
+                throw new AuthException("Authentication failed: " + ex.getMessage(), ErrorCode.TOKEN_MISSING);
+            }
     }
-}
 
+}

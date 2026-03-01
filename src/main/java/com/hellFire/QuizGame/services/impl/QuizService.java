@@ -1,6 +1,5 @@
 package com.hellFire.QuizGame.services.impl;
 
-import com.hellFire.QuizGame.dto.QuestionDto;
 import com.hellFire.QuizGame.dto.QuizDto;
 import com.hellFire.QuizGame.dto.request.CreateQuizRequest;
 import com.hellFire.QuizGame.dto.request.UpdateQuizRequest;
@@ -23,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class QuizService implements IQuizService {
@@ -68,6 +68,10 @@ public class QuizService implements IQuizService {
         Quiz quiz = quizRepository.findByIdAndCreatedByAndDeletedFalse(id, user)
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
 
+        if(!Objects.equals(quiz.getCreatedBy(), user)){
+            throw new RuntimeException("you are not authorised to perform this action");
+        }
+
         quizMapper.updateQuizFromRequest(request, quiz);
 
         if(CollectionUtils.isEmpty(request.getQuestionRequests())){
@@ -87,6 +91,16 @@ public class QuizService implements IQuizService {
         return toDto(quiz);
     }
 
+    @Override
+    public QuizDto getQuizById(Long id) {
+
+        Quiz quiz = quizRepository
+                .findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new RuntimeException("Quiz not found or you don't have access"));
+
+        return toDto(quiz);
+    }
+
     @Transactional
     public void deleteQuiz(Long id, User user) {
         Quiz quiz = quizRepository.findByIdAndCreatedBy(id, user)
@@ -98,7 +112,7 @@ public class QuizService implements IQuizService {
 
 
     @Override
-    public PaginatedResponse<QuizDto> getAllQuiz(int page, int size) {
+    public PaginatedResponse<QuizDto> getAllQuiz(int page, int size, User user) {
 
         Pageable pageable = PageRequest.of(
                 page,
@@ -106,7 +120,7 @@ public class QuizService implements IQuizService {
                 Sort.by("createdAt").ascending()
         );
 
-        Page<Quiz> quizPage = quizRepository.findAll(pageable);
+        Page<Quiz> quizPage = quizRepository.findByCreatedByNotAndDeletedFalse(user, pageable);
         Page<QuizDto> dtoPage = quizPage.map(this::toDto);
 
         return new PaginatedResponse<>(
@@ -141,18 +155,20 @@ public class QuizService implements IQuizService {
         );
     }
 
-    public void publishQuiz(Long id) {
-        Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Quiz not found"));
-        quiz.setPublished(true);
-        quizRepository.save(quiz);
-    }
 
-    public void unpublishQuiz(Long id) {
+    public boolean togglePublishStatus(Long id, User user) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
-        quiz.setPublished(false);
+
+        if(!Objects.equals(quiz.getCreatedBy(), user)){
+            throw new RuntimeException("You are not authorized");
+        }
+
+        boolean updatedStatus = !quiz.isPublished();
+        quiz.setPublished(updatedStatus);
         quizRepository.save(quiz);
+
+        return updatedStatus;
     }
 
     public QuizDto toDto(Quiz quiz){

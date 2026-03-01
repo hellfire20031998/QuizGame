@@ -7,7 +7,7 @@ import com.hellFire.QuizGame.dto.response.ApiResponse;
 import com.hellFire.QuizGame.dto.response.PaginatedResponse;
 import com.hellFire.QuizGame.entity.User;
 import com.hellFire.QuizGame.services.IQuizService;
-import org.springframework.data.domain.Page;
+import com.hellFire.QuizGame.services.impl.QuizSearchService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.*;
 public class QuizController {
 
     private final IQuizService quizService;
+    private final QuizSearchService quizSearchService;
 
-    public QuizController(IQuizService quizService) {
+    public QuizController(IQuizService quizService, QuizSearchService quizSearchService) {
         this.quizService = quizService;
+        this.quizSearchService = quizSearchService;
     }
 
     @PreAuthorize("hasRole('GAME_MASTER')")
@@ -48,25 +50,24 @@ public class QuizController {
         );
     }
 
-    @PatchMapping("/{id}/publish")
-    public ResponseEntity<ApiResponse<String>> publishQuiz(@PathVariable Long id) {
-        quizService.publishQuiz(id);
-        return ResponseEntity.ok(ApiResponse.success("Quiz published"));
-    }
+    @PatchMapping("/{id}/toggle-publish")
+    public ResponseEntity<ApiResponse<String>> togglePublish(@PathVariable Long id,
+                                                             Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        boolean newStatus = quizService.togglePublishStatus(id, user);
 
-    @PatchMapping("/{id}/unpublish")
-    public ResponseEntity<ApiResponse<String>> unpublishQuiz(@PathVariable Long id) {
-        quizService.unpublishQuiz(id);
-        return ResponseEntity.ok(ApiResponse.success("Quiz unpublished"));
+        String message = newStatus ? "Quiz published" : "Quiz unpublished";
+        return ResponseEntity.ok(ApiResponse.success(message));
     }
 
     @GetMapping("/get-all")
     public ResponseEntity<ApiResponse<PaginatedResponse<QuizDto>>> getAllQuiz(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
     ) {
-
-        return ResponseEntity.ok(ApiResponse.success(quizService.getAllQuiz(page, size)));
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.success(quizService.getAllQuiz(page, size, user)));
     }
 
     @DeleteMapping("/{id}")
@@ -92,11 +93,32 @@ public class QuizController {
         return ResponseEntity.ok(ApiResponse.success(quizService.getAllMyQuiz(page, size, user)));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<QuizDto>> getQuizById(@PathVariable Long id, Authentication authentication) {
+    @GetMapping("/my/{id}")
+    public ResponseEntity<ApiResponse<QuizDto>> getMyQuizById(@PathVariable Long id, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(ApiResponse.success(quizService.getMyQuizById(id, user)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<QuizDto>> getQuizById(@PathVariable Long id, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.success(quizService.getQuizById(id)));
+    }
 
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<?>> search(
+            @RequestParam String term,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        if (term == null || term.trim().length() < 3) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("SEARCH_TERM_TOO_SHORT",
+                            "Search term must be at least 3 characters long"));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(
+                quizSearchService.search(term.trim(), page, size)
+        ));
+    }
 }
